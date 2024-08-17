@@ -1,5 +1,6 @@
 package com.book.books.service.implement;
 
+import com.book.books.mapper.BookMapper;
 import com.book.books.converter.BookConverter;
 import com.book.books.dto.BookDataPostDto;
 import com.book.books.dto.BookDto;
@@ -13,11 +14,9 @@ import com.book.books.repository.BookRepository;
 import com.book.books.repository.TypeRepository;
 import com.book.books.service.BookServiceInterface;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,6 +36,9 @@ public class BookService implements BookServiceInterface {
     @Autowired
     private BookConverter bookConverter;
 
+    @Autowired
+    private BookMapper bookMapper;
+
     @Override
     public BookDto addBook(BookDataPostDto book) {
         List<Type> findTypes = typeRepository.findAllById(book.getTypeIds());
@@ -48,12 +50,15 @@ public class BookService implements BookServiceInterface {
         Set<Type> types = new HashSet<>(findTypes);
         Author author = authorRepository.findOneById(book.getAuthorId());
 
-        Book bookEntity = bookConverter.convertToEntity(book);
+//        Book bookEntity = bookConverter.convertToEntity(book);
+
+        Book bookEntity = bookMapper.toBook(book);
+
         bookEntity.setAuthor(author);
         bookEntity.setTypes(types);
 
         bookRepository.save(bookEntity);
-        return bookConverter.convertToDto(bookEntity);
+        return bookMapper.toBookDto(bookEntity);
     }
 
     @Override
